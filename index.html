@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WolfStation: Death Stranding Experience</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        tarBlack: '#05070a',
+                        tarDark: '#0b1017',
+                        chiralGold: '#d4af37',
+                        odradekOrange: '#e67e22',
+                        btBlue: '#1f3a52',
+                        strandBlue: '#4fa3d1',
+                        cargoWhite: '#f0f4f8'
+                    },
+                    fontFamily: {
+                        tech: ['Share Tech Mono', 'monospace'],
+                        main: ['Rajdhani', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #05070a;
+            color: #f0f4f8;
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
+            user-select: none;
+            background-image: radial-gradient(circle at 50% 100%, #0b1017 0%, #000000 100%);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #05070a; }
+        ::-webkit-scrollbar-thumb { background: #4fa3d1; border-radius: 3px; }
+
+        /* Timefall Rain Effect */
+        #rain-container { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+        .drop {
+            position: absolute;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.25));
+            width: 1px;
+            height: 40px;
+            animation: fall linear infinite;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-10vh); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(110vh); opacity: 0; }
+        }
+
+        /* Screen Transitions */
+        .screen { display: none; }
+        .screen.active { display: flex; animation: slideFadeUp 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+
+        @keyframes slideFadeUp { 
+            from { transform: translateY(20px); opacity: 0; filter: blur(4px); } 
+            to { transform: translateY(0); opacity: 1; filter: blur(0); } 
+        }
+        .fade-in { animation: fadeIn 0.6s ease-in forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Stranding Panels */
+        .panel-bridges {
+            background: linear-gradient(135deg, rgba(11, 16, 23, 0.85) 0%, rgba(5, 7, 10, 0.95) 100%);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(79, 163, 209, 0.2);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9), inset 0 0 30px rgba(79,163,209,0.05);
+            border-radius: 2px;
+            position: relative;
+        }
+        .panel-bridges::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, #4fa3d1, transparent);
+        }
+
+        .panel-chiral {
+            background: linear-gradient(135deg, rgba(20, 15, 5, 0.9) 0%, rgba(5, 5, 5, 0.95) 100%);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9), inset 0 0 30px rgba(212,175,55,0.05);
+            border-radius: 2px;
+        }
+
+        /* Buttons */
+        .btn-porter {
+            background: rgba(11, 16, 23, 0.8);
+            color: #4fa3d1;
+            font-family: 'Share Tech Mono', monospace;
+            border: 1px solid #4fa3d1;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border-radius: 2px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(79,163,209,0.2);
+        }
+        .btn-porter::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(79, 163, 209, 0.2), transparent);
+            transition: left 0.4s;
+        }
+        .btn-porter:hover:not(:disabled)::before { left: 200%; }
+        .btn-porter:hover:not(:disabled) {
+            background: rgba(79, 163, 209, 0.15);
+            box-shadow: 0 5px 20px rgba(79, 163, 209, 0.5);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+        .btn-porter:disabled { opacity: 0.5; filter: grayscale(100%); cursor: not-allowed; }
+
+        .btn-chiral { border-color: #d4af37; color: #d4af37; box-shadow: 0 0 10px rgba(212,175,55,0.2); }
+        .btn-chiral:hover:not(:disabled) { background: rgba(212, 175, 55, 0.15); box-shadow: 0 5px 20px rgba(212, 175, 55, 0.5); color: #fff; }
+
+        .btn-bt { border-color: #e74c3c; color: #e74c3c; box-shadow: 0 0 10px rgba(231,76,60,0.2); }
+        .btn-bt:hover:not(:disabled) { background: rgba(231, 76, 60, 0.15); box-shadow: 0 5px 20px rgba(231, 76, 60, 0.5); color: #fff; }
+
+        /* Character Cards */
+        .char-card {
+            transition: all 0.3s; cursor: pointer; border: 1px solid rgba(79, 163, 209, 0.3);
+            background: rgba(11, 16, 23, 0.6); filter: grayscale(80%);
+        }
+        .char-card:hover { filter: grayscale(0%); transform: translateY(-5px); border-color: rgba(79, 163, 209, 0.6); }
+        .char-card.selected { filter: grayscale(0%); border-color: #4fa3d1; box-shadow: 0 0 20px rgba(79, 163, 209, 0.5); background: rgba(79, 163, 209, 0.15); }
+
+        /* Options */
+        .option-btn {
+            background: rgba(11, 16, 23, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ccc;
+            padding: 1.25rem 1.5rem;
+            border-radius: 2px;
+            width: 100%;
+            text-align: left;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .option-btn:hover { border-color: #4fa3d1; background: rgba(79, 163, 209, 0.1); color: #fff; transform: translateX(5px); }
+        .option-btn.correct { border-color: #4fa3d1; background: rgba(79, 163, 209, 0.2); color: #fff; box-shadow: 0 0 20px rgba(79, 163, 209, 0.4); }
+        .option-btn.wrong { border-color: #e74c3c; background: rgba(231, 76, 60, 0.2); color: #ff6666; animation: shake 0.4s; }
+
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+        /* Follow-Up UI */
+        .followup-container { width: 100%; border-top:
